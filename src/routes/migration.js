@@ -7,7 +7,7 @@ const router = Router();
 router.post("/", async (req,res)=> {
     try {
         logger.info("Iniciando migración...");
-        migrationScript();
+        await migrationScript();
         logger.info("Migración exitosa");
     } catch (error) {
         logger.error("Error en la migración: " + error.message);

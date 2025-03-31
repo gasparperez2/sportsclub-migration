@@ -40,3 +40,33 @@ Se usa para insertar un valor en la tabla Sedes o Usuarios a la vez que insertar
 Ej: `node src/db/generate.js delete Sedes {} 1`
 
 Se usa para borrar un registro en la base de datos a la vez que insertarlo en el historial
+
+### EXPRESS APP
+
+`npm start` Para iniciar la app
+
+#### Request
+```
+curl -i -H 'Accept: application/json' -d {} http://localhost:3000/api/migrate
+```
+
+#### Response
+```
+HTTP/1.1 200 OK
+X-Powered-By: Express
+X-RateLimit-Limit: 200
+X-RateLimit-Remaining: 197
+Date: Mon, 31 Mar 2025 01:40:23 GMT
+X-RateLimit-Reset: 1743386094
+Access-Control-Allow-Origin: http://localhost:3000
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Headers: Origin, X-Requested-With, Content-Type, Accept
+Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE
+Content-Type: application/json; charset=utf-8
+Content-Length: 32
+ETag: W/"20-ipR43gUqVj3qhiLUHg3K0wXYLbQ"
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"message":"Migración exitosa"}
+```

@@ -155,7 +155,7 @@ const updateRecord = (table, id, newValues) => {
 const args = process.argv.slice(2);
 const command = args[0];
 const table = args[1];
-const newValues = JSON.parse(args[2]);
+const newValues = JSON.parse(args[2] || "{}");
 const id = args[3];
 if (command === "generate") {
   generateDb();
