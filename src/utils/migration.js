@@ -22,71 +22,64 @@ const migrationScript = () => {
         // badado en la fecha de la ultima migracion y la fecha de HistorialMigración e HistorialUsuarios
         const last_migration_date = new Date(db1.HistorialMigración[db1.HistorialMigración.length - 1].fecha);
         
-        let values_to_append = {
-            Usuarios: [],
+        let history_values = {
             HistorialUsuarios: [],
-            Sedes: [],
             HistorialSedes: []
         };
-        let values_to_update = {
-            Usuarios: [],
-            Sedes: []
-        };
-        let values_to_delete = {
-            Usuarios: [],
-            Sedes: []
-        };
 
-        // Recorre el HistorialUsuarios y HistorialSedes de db1 desde el ultimo hasta la fecha de la ultima migracion
+        // Recorre el HistorialUsuarios e HistorialSedes de db1 desde el ultimo hasta la fecha de la ultima migracion
+        
+        // Primero itera el HistorialUsuarios de arriba a abajo para ordenar los registros de manera ascendente
         for (let i = db1.HistorialUsuarios.length - 1; i >= 0; i--) {
             current_user_history_date = new Date(db1.HistorialUsuarios[i].fecha);
             if (current_user_history_date > last_migration_date) {
                 // Cuando es un append se agrega al principio del array para que se mantenga el orden
-                values_to_append.HistorialUsuarios.unshift(db1.HistorialUsuarios[i]);
-                if (db1.HistorialUsuarios[i].is_new_value) {
-                    values_to_append.Usuarios.unshift(db1.HistorialUsuarios[i].new_values);
-                } else if (db1.HistorialUsuarios[i].is_deleted) {
-                    values_to_delete.Usuarios.push(db1.HistorialUsuarios[i].user_id);
-                } else {
-                    values_to_update.Usuarios.push(db1.HistorialUsuarios[i].new_values);
-                }
+                history_values.HistorialUsuarios.unshift(db1.HistorialUsuarios[i]);
             } else break
         }
+        // Y luego se itera los registros ordenados para modificar los valores de Usuarios y Sedes en db2
+        // Es importante hacer esto para no perder el orden de los registros
+        for (let i = 0; i < history_values.HistorialUsuarios.length; i++) {
+            const user_history = history_values.HistorialUsuarios[i];
+            if (user_history.is_new_value) {
+                // Agrega el nuevo usuario a db2.Usuarios
+                // Simula un INSERT en SQL
+                db2.Usuarios.push(user_history.new_values);
+            }
+            else if (user_history.is_deleted) {
+                // Elimina el usuario de db2.Usuarios
+                // Simula un DELETE en SQL
+                db2.Usuarios = db2.Usuarios.filter(user => user.id !== user_history.user_id);
+            } else {
+                // Actualiza el usuario en db2.Usuarios
+                // Simula un UPDATE en SQL
+                const user = db2.Usuarios.find(user => user.id === user_history.user_id);
+                if (user) {
+                    Object.assign(user, user_history.new_values);
+                }
+            }
+        }
+
+        // Ahora se hace lo mismo con el HistorialSedes
         for (let i = db1.HistorialSedes.length - 1; i >= 0; i--) {
             current_sede_history_date = new Date(db1.HistorialSedes[i].fecha);
             if (current_sede_history_date > last_migration_date) {
-                values_to_append.HistorialSedes.unshift(db1.HistorialSedes[i]);
-                if (db1.HistorialSedes[i].is_new_value) {
-                    values_to_append.Sedes.unshift(db1.HistorialSedes[i].new_values);
-                } else if (db1.HistorialSedes[i].is_deleted) {
-                    values_to_delete.Sedes.push(db1.HistorialSedes[i].sede_id);
-                } else {
-                    values_to_update.Sedes.push(db1.HistorialSedes[i].new_values);
-                }
+                history_values.HistorialSedes.unshift(db1.HistorialSedes[i]);
             } else break
         }
-        
-        // Valores a agregar a db2
-        db2.Usuarios.push(...values_to_append.Usuarios);
-        db2.HistorialUsuarios.push(...values_to_append.HistorialUsuarios);
-        db2.Sedes.push(...values_to_append.Sedes);
-        db2.HistorialSedes.push(...values_to_append.HistorialSedes);
-        
-        // Valores a eliminar de db2
-        db2.Usuarios = db2.Usuarios.filter(user => !values_to_delete.Usuarios.includes(user.id));
-        db2.Sedes = db2.Sedes.filter(sede => !values_to_delete.Sedes.includes(sede.id));
 
-        // Valores a actualizar de db2
-        for (let i = 0; i < values_to_update.Usuarios.length; i++) {
-            const user = db2.Usuarios.find(user => user.id === values_to_update.Usuarios[i].id);
-            if (user) {
-                Object.assign(user, values_to_update.Usuarios[i]);
+        for (let i = 0; i < history_values.HistorialSedes.length; i++) {
+            const sede_history = history_values.HistorialSedes[i];
+            if (sede_history.is_new_value) {
+                db2.Sedes.push(sede_history.new_values);
             }
-        }
-        for (let i = 0; i < values_to_update.Sedes.length; i++) {
-            const sede = db2.Sedes.find(sede => sede.id === values_to_update.Sedes[i].id);
-            if (sede) {
-                Object.assign(sede, values_to_update.Sedes[i]);
+            else if (sede_history.is_deleted) {
+                db2.Sedes = db2.Sedes.filter(user => user.id !== sede_history.user_id);
+            } else {
+                const sede = db2.Sedes.find(sede => sede.id === sede_history.sede_id);
+                if (sede) {
+                    Object.assign(sede, sede_history.new_values);
+                }
             }
         }
     }

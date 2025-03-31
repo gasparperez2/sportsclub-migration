@@ -1,3 +1,5 @@
 node_modules
 .env
 logs
+db1.json
+db2.json
